@@ -17,8 +17,8 @@ client = RealtimeClient(username, password)
 # searching for board games
 result = client.amazon.scrape_search(query="board games", 
                                      country="us", 
-                                     page=1, 
-                                     max_results=10, 
+                                     page=2, 
+                                     max_results=30, 
                                      parse=True,
                                      context = [{'key': 'autoselect_variant', 'value': True}])
 
