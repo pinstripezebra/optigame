@@ -6,5 +6,6 @@ node_modules/
 /playwright/.cache/
 .venv
 Data/amazon.txt
+Data/raw_data
 .env
 .env2

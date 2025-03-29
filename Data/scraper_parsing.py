@@ -24,10 +24,14 @@ def convert_to_dataframe(data:list):
 
 # Read the JSON object from the .txt file
 with open("Data/output.txt", "r", encoding="utf-8") as file:
-    data_paid = json.load(file)['results'][0]['content']['results']['paid']  # paid results
-    #data_organic = json.load(file)['results'][0]['content']['results']['organic'] # organic results
+    results = json.load(file)['results'][0]['content']['results']
+    data_paid = results['paid']  # paid results
+    data_organic = results['organic']  # organic results
+    print("results type", type(results))
+    print(results.keys())
+
 
 
 # Parsing data, converting to dataframe, and writing to csv
-paid_df = convert_to_dataframe(data_paid)
-paid_df.to_csv("Data/paid_results.csv", index=False)  
+combined_df = convert_to_dataframe(data_paid + data_organic)
+combined_df.to_csv("Data/raw_data/paid_results.csv", index=False)  
