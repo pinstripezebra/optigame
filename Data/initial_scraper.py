@@ -14,7 +14,7 @@ password = os.environ.get("PASSWORD_OXY")
 client = RealtimeClient(username, password)
 
 # Use `bing_search` as a source to scrape Bing with nike as a query.
-result = client.amazon.scrape_search(query="board games", country="us", page=1, max_results=10)
+result = client.amazon.scrape_search(query="board games", country="us", page=1, max_results=10, parse=True)
 # Print the result in JSON format.
 print(result.raw)
 
