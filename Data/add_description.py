@@ -12,7 +12,7 @@ load_dotenv(dotenv_path=".env2")
 username = os.environ.get("USERNAME_OXY")
 password = os.environ.get("PASSWORD_OXY")
 
-df = pd.read_csv("Data/raw_data/paid_results.csv")
+df = pd.read_csv("Data/raw_data/results.csv")
 keys = df['asin'].tolist()
 descriptions = []
 
@@ -20,7 +20,7 @@ for key in keys:
     # Structure payload.
     payload = {
         'source': 'amazon_product',
-        'query': '{key}',
+        'query': '{key}'.format(key=key),
         'geo_location': '90210',
         'parse': True
     }
