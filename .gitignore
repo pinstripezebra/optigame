@@ -7,3 +7,4 @@ node_modules/
 .venv
 Data/amazon.txt
 .env
+.env2
