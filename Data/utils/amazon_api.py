@@ -1,0 +1,56 @@
+import json
+import pandas as pd
+import requests
+
+def parse_item(item):
+    # Extract the relevant fields from the item
+    return {
+        "asin": item["asin"],
+        "title": item["title"],
+        "price": item["price"],
+        "rating": item["rating"],
+        "sales_volume": item["sales_volume"],
+        "reviews_count": item["reviews_count"]}
+
+def convert_to_dataframe(data:list):
+    # iterates through list of dictionaries and creates a DataFrame
+    dataframe_list = []
+    for item in data:
+        parsed_item = parse_item(item)
+        dataframe_list.append(pd.DataFrame(parsed_item, index=[0]))
+    df = pd.concat(dataframe_list, ignore_index=True)
+
+    return df
+
+
+def add_descriptions(df, username, password):
+
+    descriptions = []
+    keys = df['asin'].tolist()
+
+    for key in keys:
+        # Structure payload.
+        payload = {
+            'source': 'amazon_product',
+            'query': '{key}'.format(key=key),
+            'geo_location': '90210',
+            'parse': True
+        }
+
+        try:
+            # Get response.
+            response = requests.request(
+                'POST',
+                'https://realtime.oxylabs.io/v1/queries',
+                auth=(username, password),
+                json=payload,
+            )
+
+            # Print prettified response to stdout.
+            output = response.json()['results'][0]['content']
+            descriptions.append(output['description'])
+        except:
+            print(f"Error retrieving description for ASIN {key}.")
+            descriptions.append("")
+    df['description'] = descriptions
+    return df
