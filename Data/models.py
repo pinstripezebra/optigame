@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from uuid import UUID,UUID4
+from uuid import UUID,uuid4
 from typing import Optional
 from enum import Enum
 
@@ -8,14 +8,14 @@ class Role(str, Enum):
     user = 'user'
 
 class User(BaseModel):
-    id: Optional[UUID] = UUID4
+    id: Optional[UUID] = uuid4()
     username: str
     password: str
     role: Role
 
 
 class Game(BaseModel):
-    id: Optional[UUID] = UUID4
+    id: Optional[UUID] = uuid4()
     title: str
     description: str
     price: float
