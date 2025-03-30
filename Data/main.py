@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Depends
-from Data.models import User, Game, Role
+from Data.models import User, Game, Role, GameModel
 from typing import List
 from uuid import uuid4, UUID
 import os
@@ -51,6 +51,7 @@ async def fetch_users():
 
 @app.get("/api/v1/products")
 async def fetch_products(db: Session = Depends(get_db)):
-    # Query the "optigame_products" table
+    # Query the database using the SQLAlchemy Game model
     products = db.query(Game).all()
-    return products
+    # Serialize the results using the Pydantic GameModel
+    return [GameModel.from_orm(product) for product in products]
