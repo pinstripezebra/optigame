@@ -2,12 +2,18 @@ from dotenv import load_dotenv
 import pandas as pd
 import psycopg2
 import os
+import uuid
 
 # Load environment variables from .env2 file
 load_dotenv(dotenv_path=".env2")
 
 df = pd.read_csv("Data/raw_data/results_with_description.csv")
+# Generate a UUID for each row in the DataFrame
+df['id'] = [uuid.uuid4() for _ in range(len(df))]
+
+# Connect to the PostgreSQL database
 conn = psycopg2.connect(os.environ.get("POST_DB_LINK"), sslmode='require')
+
 
 def create_table(query:str):
 
@@ -34,11 +40,20 @@ def populate_table(df):
 
     # Iterate over the rows of the DataFrame and insert each row into the table
     for index, row in df.iterrows():
-        cursor.execute("""INSERT INTO optigame_products (asin,title,price,rating,sales_volume,reviews_count,description)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-                       (row['asin'], row['title'], row['price'], row['rating'], row['sales_volume'],
-                        row['description'], row['reviews_count']))
-
+        cursor.execute(
+            """INSERT INTO optigame_products (id, asin, title, price, rating, sales_volume, reviews_count, description)
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+            (
+                str(row['id']),  # Convert UUID to string
+                row['asin'],
+                row['title'],
+                row['price'],
+                row['rating'],
+                row['sales_volume'],
+                row['reviews_count'],
+                row['description'],
+            )
+        )
     conn.commit()
     # Close the cursor and connection
     cursor.close()
@@ -56,7 +71,7 @@ def retrieve_all_from_table(table_name:str):
     rows = cursor.fetchall()
   
     # Create a DataFrame from the rows
-    df = pd.DataFrame(rows, columns=['asin','title','price','rating','sales_volume','reviews_count','description'])
+    df = pd.DataFrame(rows, columns=['id','asin','title','price','rating','sales_volume','reviews_count','description'])
     return df
 
 def delete_table(table_name:str):
@@ -74,14 +89,18 @@ def delete_table(table_name:str):
 if __name__ == "__main__":
     table_name = "optigame_products"
     table_creation_query = """CREATE TABLE IF NOT EXISTS optigame_products (
-        asin varchar(255),
-        title text,
-        price varchar(255),
-        rating varchar(255),
-        sales_volume text,
-        description text,
-        reviews_count text
-    )"""
+    id UUID PRIMARY KEY,
+    asin VARCHAR(255),
+    title TEXT,
+    price FLOAT,
+    rating FLOAT,
+    sales_volume TEXT,
+    description TEXT,
+    reviews_count INTEGER
+        )
+    """
+
+    #note changed sales volume to text because of the error with the data type
 
     # Deleting the table if it exists
     delete_table(table_name)

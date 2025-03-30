@@ -30,7 +30,7 @@ class Game(Base):
     description = Column(String, nullable=True)
     price = Column(Float, nullable=False)
     rating = Column(Float, nullable=True)
-    sales_volume = Column(Integer, nullable=True)
+    sales_volume = Column(String, nullable=True)
     reviews_count = Column(Integer, nullable=True)
     asin = Column(String, unique=True, nullable=False)
 
@@ -41,10 +41,11 @@ class GameModel(BaseModel):
     description: Optional[str]
     price: float
     rating: Optional[float]
-    sales_volume: Optional[int]
+    sales_volume: Optional[str]
     reviews_count: Optional[int]
     asin: str
 
     class Config:
-        orm_mode = True
-        arbitrary_types_allowed = True
+        orm_mode = True  # Enable ORM mode to work with SQLAlchemy objects
+        from_attributes = True # Enable attribute access for SQLAlchemy objects
+        
