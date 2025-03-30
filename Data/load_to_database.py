@@ -6,51 +6,90 @@ import os
 # Load environment variables from .env2 file
 load_dotenv(dotenv_path=".env2")
 
-df = pd.read_csv("Data/raw_data/total_results_with_description.csv")
-
-
+df = pd.read_csv("Data/raw_data/results_with_description.csv")
 conn = psycopg2.connect(os.environ.get("POST_DB_LINK"), sslmode='require')
 
-def create_games_table():
+def create_table(query:str):
 
-    """ Connect to the PostgreSQL database and create games table
-    if it doesnt exist."""
+    """ Connect to the PostgreSQL database and a table using a user
+    specified query if it doesnt already exist."""
 
     # Create a cursor object
     cursor = conn.cursor()
     # Execute a query to create a table
-    cursor.execute("""CREATE TABLE IF NOT EXISTS products (
-        asin varchar(255),
-        title varchar(255),
-        price varchar(1000),
-        rating varchar(255),
-        rating_count varchar(255),
-        description text,
-        image_url varchar(255),
-        product_url varchar(255)
-    )""")
+    cursor.execute(query)
 
     conn.commit()
     # Close the cursor and connection
     cursor.close()
-    conn.close()
 
-def populate_games_table(df):
 
-    """ Connect to the PostgreSQL database and populate games table
-    with data from the dataframe."""
+def populate_table(df):
+
+    """ Connect to the PostgreSQL database and the user specified table
+    with the desired query."""
 
     # Create a cursor object
     cursor = conn.cursor()
 
     # Iterate over the rows of the DataFrame and insert each row into the table
     for index, row in df.iterrows():
-        cursor.execute("""INSERT INTO products (asin, title, price, rating, rating_count, description, image_url, product_url)
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-                       (row['asin'], row['title'], row['price'], row['rating'], row['reviews_count'],
-                        row['description'], row['image_url'], row['product_url']))
+        cursor.execute("""INSERT INTO optigame_products (asin,title,price,rating,sales_volume,reviews_count,description)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                       (row['asin'], row['title'], row['price'], row['rating'], row['sales_volume'],
+                        row['description'], row['reviews_count']))
 
     conn.commit()
     # Close the cursor and connection
     cursor.close()
-    conn.close()
+
+def retrieve_all_from_table(table_name:str):
+
+    """ Connect to the PostgreSQL database and retrieves all data from a user specified table"""
+
+    # Create a cursor object
+    cursor = conn.cursor()
+    # Execute a query to retrieve data from the table
+    cursor.execute("SELECT * FROM {table_name}".format(table_name=table_name))
+
+    # Fetch all rows from the result of the query
+    rows = cursor.fetchall()
+  
+    # Create a DataFrame from the rows
+    df = pd.DataFrame(rows, columns=['asin','title','price','rating','sales_volume','reviews_count','description'])
+    return df
+
+def delete_table(table_name:str):
+
+    """ Connect to the PostgreSQL database and deletes hser provided table"""
+
+    # Create a cursor object
+    cursor = conn.cursor()
+    # Execute a query to delete the table
+    cursor.execute("DROP TABLE IF EXISTS {table_name}".format(table_name=table_name))
+    conn.commit()
+    # Close the cursor and connection
+    cursor.close()
+
+if __name__ == "__main__":
+    table_name = "optigame_products"
+    table_creation_query = """CREATE TABLE IF NOT EXISTS optigame_products (
+        asin varchar(255),
+        title text,
+        price varchar(255),
+        rating varchar(255),
+        sales_volume text,
+        description text,
+        reviews_count text
+    )"""
+
+    # Deleting the table if it exists
+    delete_table(table_name)
+    # Create the table if it doesn't exist
+    create_table(table_creation_query)
+    # Populate the table with data from the DataFrame
+    populate_table(df)
+    # returning data from the database
+    df = retrieve_all_from_table(table_name)
+    print(df)
+    print("Data loaded successfully into the database.")
