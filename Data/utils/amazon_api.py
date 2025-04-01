@@ -12,6 +12,17 @@ def parse_item(item):
         "sales_volume": item["sales_volume"],
         "reviews_count": item["reviews_count"]}
 
+def parse_results(result):
+    """Parses the results from the Oxylabs API."""
+    # parsing data
+    results = result['results'][0]['content']['results']
+    data_paid = results['paid']  # paid results
+    data_organic = results['organic']  # organic results
+
+    # Parsing data, converting to dataframe, and writing to csv
+    combined_df = convert_to_dataframe(data_paid + data_organic)
+    return combined_df
+
 def convert_to_dataframe(data:list):
     # iterates through list of dictionaries and creates a DataFrame
     dataframe_list = []
