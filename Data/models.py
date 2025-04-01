@@ -21,7 +21,8 @@ class User(BaseModel):
     password: str
     role: Role
 
-
+# This is the game model for the database
+# we have separate classes for the pydantic model and the SQLAlchemy model
 class Game(Base):
     __tablename__ = "optigame_products"  # Table name in the PostgreSQL database
 
@@ -44,6 +45,30 @@ class GameModel(BaseModel):
     sales_volume: Optional[str]
     reviews_count: Optional[int]
     asin: str
+
+    class Config:
+        orm_mode = True  # Enable ORM mode to work with SQLAlchemy objects
+        from_attributes = True # Enable attribute access for SQLAlchemy objects
+
+
+# This is the User model for the database
+# we have separate classes for the pydantic model and the SQLAlchemy model
+class User(Base):
+    __tablename__ = "optigame_users"  # Table name in the PostgreSQL database
+
+    id = Column(pg.UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True, nullable=False)
+    username = Column(String, nullable=False)
+    password = Column(String, nullable=True)
+    email = Column(String, nullable=False)
+    role = Column(Role, nullable=True)
+
+
+class UserModel(BaseModel):
+    id: Optional[UUID]
+    username: str
+    password: str
+    emai: str
+    role: Role
 
     class Config:
         orm_mode = True  # Enable ORM mode to work with SQLAlchemy objects
