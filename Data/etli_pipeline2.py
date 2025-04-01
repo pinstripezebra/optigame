@@ -5,6 +5,11 @@ import json
 from utils.amazon_api import convert_to_dataframe, add_description, parse_results
 from utils.db_handler import DatabaseHandler
 
+
+#-------------------------------#
+#PART 1: Scraping Data from Oxylabs API
+#-------------------------------#
+
 # Load environment variables from .env2 file
 load_dotenv(dotenv_path=".env2")
 
@@ -28,8 +33,12 @@ combined_df = parse_results(result)
 
 # adding descriptions
 combined_df = add_description(combined_df, username, password)
-combined_df.to_csv("Data/raw_data/total_results_with_description.csv", index=False)
 
+
+#-------------------------------#
+#PART 2: Loading Data into PostgreSQL Database
+#-------------------------------#
+my_db_handler = DatabaseHandler()
 table_name = "optigame_products"
 table_creation_query = """CREATE TABLE IF NOT EXISTS optigame_products (
     id UUID PRIMARY KEY,
@@ -42,15 +51,12 @@ table_creation_query = """CREATE TABLE IF NOT EXISTS optigame_products (
     reviews_count INTEGER
         )
     """
-
-
-# Deleting the table if it exists
-delete_table(table_name)
+my_db_handler.delete_table(table_name)
 # Create the table if it doesn't exist
-create_table(table_creation_query)
+my_db_handler.create_table(table_creation_query)
 # Populate the table with data from the DataFrame
-populate_table(df)
+my_db_handler.populate_table(combined_df)
 # returning data from the database
-df = retrieve_all_from_table(table_name)
+df = my_db_handler.retrieve_all_from_table(table_name)
 print(df)
 print("Data loaded successfully into the database.")
