@@ -2,8 +2,9 @@ from oxylabs import RealtimeClient
 from dotenv import load_dotenv
 import os
 import json
-from utils.amazon_api import convert_to_dataframe, add_description, parse_results
+from utils.amazon_api import convert_to_dataframe, add_descriptions, parse_results
 from utils.db_handler import DatabaseHandler
+import uuid
 
 
 #-------------------------------#
@@ -23,21 +24,24 @@ client = RealtimeClient(username, password)
 # searching for board games
 result = client.amazon.scrape_search(query="board games", 
                                      country="us", 
-                                     page=2, 
-                                     max_results=30, 
+                                     page=4, 
+                                     max_results=100, 
                                      parse=True,
                                      context = [{'key': 'autoselect_variant', 'value': True}])
 
+# Convert the response object to JSON
+response_json = result.raw
 # parsing results
-combined_df = parse_results(result)
+combined_df = parse_results(response_json)
 
 # adding descriptions
-combined_df = add_description(combined_df, username, password)
+combined_df = add_descriptions(combined_df, username, password)
 
 
 #-------------------------------#
 #PART 2: Loading Data into PostgreSQL Database
 #-------------------------------#
+combined_df['id'] = [uuid.uuid4() for _ in range(len(combined_df))]
 my_db_handler = DatabaseHandler()
 table_name = "optigame_products"
 table_creation_query = """CREATE TABLE IF NOT EXISTS optigame_products (
@@ -55,8 +59,11 @@ my_db_handler.delete_table(table_name)
 # Create the table if it doesn't exist
 my_db_handler.create_table(table_creation_query)
 # Populate the table with data from the DataFrame
-my_db_handler.populate_table(combined_df)
+my_db_handler.populate_games_table(combined_df)
 # returning data from the database
 df = my_db_handler.retrieve_all_from_table(table_name)
 print(df)
 print("Data loaded successfully into the database.")
+
+# writing backup dataset
+df.to_csv("Data/raw_data/total_results_with_description.csv", index=False)
