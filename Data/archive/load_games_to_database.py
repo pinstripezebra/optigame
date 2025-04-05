@@ -42,7 +42,8 @@ def populate_table(df):
     for index, row in df.iterrows():
         cursor.execute(
             """INSERT INTO optigame_products (id, asin, title, price, rating, sales_volume, reviews_count, description)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+               ON CONFLICT (id) DO NOTHING""",
             (
                 str(row['id']),  # Convert UUID to string
                 row['asin'],

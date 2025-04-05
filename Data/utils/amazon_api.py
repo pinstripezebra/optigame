@@ -4,13 +4,24 @@ import requests
 
 def parse_item(item):
     # Extract the relevant fields from the item
-    return {
-        "asin": item["asin"],
-        "title": item["title"],
-        "price": item["price"],
-        "rating": item["rating"],
-        "sales_volume": item["sales_volume"],
-        "reviews_count": item["reviews_count"]}
+    try:
+        return {
+            "asin": item["asin"],
+            "title": item["title"],
+            "price": item["price"],
+            "rating": item["rating"],
+            "sales_volume": item["sales_volume"],
+            "reviews_count": item["reviews_count"]}
+    except:
+        print(f"Error parsing item: {item}")
+        return {
+            "asin": item["asin"],
+            "title": item["title"],
+            "price": None,
+            "rating": None,
+            "sales_volume": None,
+            "reviews_count": None}
+
 
 def parse_results(result):
     """Parses the results from the Oxylabs API."""

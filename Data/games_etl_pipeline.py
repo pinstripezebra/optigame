@@ -24,8 +24,8 @@ client = RealtimeClient(username, password)
 # searching for board games
 result = client.amazon.scrape_search(query="board games", 
                                      country="us", 
-                                     page=4, 
-                                     max_results=100, 
+                                     start_page=10,
+                                     max_results=400, 
                                      parse=True,
                                      context = [{'key': 'autoselect_variant', 'value': True}])
 
@@ -34,9 +34,9 @@ response_json = result.raw
 # parsing results
 combined_df = parse_results(response_json)
 
-# adding descriptions
+# adding descriptions and saving csv
 combined_df = add_descriptions(combined_df, username, password)
-
+combined_df.to_csv("Data/raw_data/results_with_description.csv", index=False)
 
 #-------------------------------#
 #PART 2: Loading Data into PostgreSQL Database
@@ -55,7 +55,7 @@ table_creation_query = """CREATE TABLE IF NOT EXISTS optigame_products (
     reviews_count INTEGER
         )
     """
-my_db_handler.delete_table(table_name)
+#my_db_handler.delete_table(table_name)
 # Create the table if it doesn't exist
 my_db_handler.create_table(table_creation_query)
 # Populate the table with data from the DataFrame
