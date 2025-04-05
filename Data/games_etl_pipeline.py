@@ -22,9 +22,9 @@ password = os.environ.get("PASSWORD_OXY")
 client = RealtimeClient(username, password)
 
 # searching for board games
-result = client.amazon.scrape_search(query="strategy games", 
+result = client.amazon.scrape_search(query="rpg board games", 
                                      country="us", 
-                                     start_page=2,
+                                     start_page=8,
                                      max_results=100, 
                                      parse=True,
                                      context = [{'key': 'autoselect_variant', 'value': True}])
