@@ -27,11 +27,19 @@ def parse_results(result):
     """Parses the results from the Oxylabs API."""
     # parsing data
     results = result['results'][0]['content']['results']
-    data_paid = results['paid']  # paid results
-    data_organic = results['organic']  # organic results
+    if 'paid' in results and 'organic' in results:
+        data_paid = results['paid']  # paid results
+        data_organic = results['organic']  # organic results
 
-    # Parsing data, converting to dataframe, and writing to csv
-    combined_df = convert_to_dataframe(data_paid + data_organic)
+        # Parsing data, converting to dataframe, and writing to csv
+        combined_df = convert_to_dataframe(data_paid + data_organic)
+    elif 'organic' in results:
+        data_organic = results['organic']  # organic results
+        combined_df = convert_to_dataframe(data_organic)
+    elif 'paid' in results:
+        data_paid = results['paid']
+        combined_df = convert_to_dataframe(data_paid)
+
     return combined_df
 
 def convert_to_dataframe(data:list):
